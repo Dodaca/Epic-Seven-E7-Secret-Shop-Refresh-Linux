@@ -9,9 +9,9 @@ from PIL import Image
 import threading
 import cv2
 import numpy as np
-import keyboard
 import random
 import configparser
+import select
 
 class E7Item:
     def __init__(self, image=None, price=0, count=0):
@@ -82,7 +82,7 @@ class E7Inventory:
             writer.writerow(data)
 
 class E7ADBShopRefresh:
-    def __init__(self, tap_sleep:float = 0.3, budget=None, ip_port=None, stop_refresh_key='esc', random_offset = False, debug=False):
+    def __init__(self, tap_sleep:float = 0.3, budget=None, ip_port=None, stop_refresh_key='#', random_offset = False, debug=False, adb_path=os.path.join('adb-assets','platform-tools', 'adb')):
         self.loop_active = False
         self.end_of_refresh = True
         self.tap_sleep = tap_sleep
@@ -99,7 +99,7 @@ class E7ADBShopRefresh:
         self.device_args = [] if ip_port is None else ['-s', ip_port]
         self.refresh_count = 0
         self.keyboard_thread = threading.Thread(target=self.checkKeyPress)
-        self.adb_path = os.path.join('adb-assets','platform-tools', 'adb')
+        self.adb_path = adb_path
         self.storage = E7Inventory()
         self.screenwidth = 1920
         self.screenheight = 1080
@@ -119,7 +119,10 @@ class E7ADBShopRefresh:
     #threads
     def checkKeyPress(self):
         while(self.loop_active and not self.end_of_refresh):
-            self.loop_active = not keyboard.is_pressed(self.stop_refresh_key)
+            if select.select([sys.stdin,],[],[],0.5)[0]:
+                read_in= sys.stdin.readline() #input()
+                if read_in== self.stop_refresh_key:
+                    self.loop_active = False 
         self.loop_active = False
         print('Shop refresh terminated!')
 
@@ -398,7 +401,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     ip_port = None
-    adb_path = os.path.join('adb-assets', 'platform-tools', 'adb')
+    adb_path = 'adb'#os.path.join('adb-assets', 'platform-tools', 'adb')
     #use below to test ip port on google beta developer
     #subprocess.run([adb_path, 'kill-server'])
     devices = getDevices(False)
@@ -458,7 +461,8 @@ if __name__ == '__main__':
                                     ip_port=ip_port,
                                     stop_refresh_key=config["Settings"]["stop_refresh_key"],
                                     random_offset=config.getboolean("Settings", "random_offset"),
-                                    debug=False)
+                                    debug=False,
+                                    adb_path=adb_path)
             ADBSHOP.start()
             print()
             input('press enter to exit...')
@@ -480,20 +484,20 @@ if __name__ == '__main__':
         print()
 
     #setting
-    stop_refresh_key = 'esc'
+    stop_refresh_key = '#'
     if debug:
         print('Keep looking at image until friendship bookmark or any bm is purchased')
-        print('Use "esc" key to exit in debug mode')
+        print('Use "#" key to exit in debug mode')
     else:
         print("Input the key that you want to use to stop refresh (0-9 a-z /.,';[]) ")
-        print('Leave blank to use "esc" key')
+        print('Leave blank to use "#" key')
         stop_refresh_key = input('Key: ')
         
         if stop_refresh_key:
             print(f'"{stop_refresh_key}" key will be use to stop refresh')
         else:
-            stop_refresh_key = 'esc'
-            print('Default "esc" key to stop refresh')
+            stop_refresh_key = '#'
+            print('Default "#" key to stop refresh')
     print()
     
     random_offset = False
@@ -549,7 +553,8 @@ if __name__ == '__main__':
                                ip_port=ip_port,
                                stop_refresh_key=stop_refresh_key,
                                random_offset=random_offset,
-                               debug=debug)
+                               debug=debug,
+                               adb_path=adb_path)
     ADBSHOP.start()
     print()
     input('press enter to exit...')
