@@ -13,6 +13,8 @@ import random
 import configparser
 import select
 
+os.environ['QT_QPA_PLATFORM'] = "xcb"
+
 class E7Item:
     def __init__(self, image=None, price=0, count=0):
         self.image=image
@@ -557,4 +559,5 @@ if __name__ == '__main__':
                                adb_path=adb_path)
     ADBSHOP.start()
     print()
+    time.sleep(0.2)
     input('press enter to exit...')
