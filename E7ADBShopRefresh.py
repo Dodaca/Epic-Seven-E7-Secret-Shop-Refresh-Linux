@@ -220,7 +220,7 @@ class E7ADBShopRefresh:
             sys.exit(0)
 
     def takeScreenshot(self):
-        adb_process = subprocess.run([self.adb_path] + self.device_args + ['exec-out', 'screencap','-p'], stdout=subprocess.PIPE)
+        adb_process = subprocess.run([self.adb_path] + self.device_args + ['exec-out', 'screencap -p 2> /dev/null'], stdout=subprocess.PIPE)
         img_array = np.frombuffer(adb_process.stdout, dtype=np.uint8)
         screenshot = cv2.imdecode(img_array, cv2.IMREAD_GRAYSCALE)
         # ims = cv2.resize(screenshot, (960, 540))
@@ -232,7 +232,7 @@ class E7ADBShopRefresh:
     def showOffsetArea(self, x, y, imshow_title = "Debug", text_desc = ''):
 
         #Grab a color image
-        adb_process = subprocess.run([self.adb_path] + self.device_args + ['exec-out', 'screencap','-p'], stdout=subprocess.PIPE)
+        adb_process = subprocess.run([self.adb_path] + self.device_args + ['exec-out', 'screencap -p 2> /dev/null'], stdout=subprocess.PIPE)
         img_array = np.frombuffer(adb_process.stdout, dtype=np.uint8)
         ims = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
         
