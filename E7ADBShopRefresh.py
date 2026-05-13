@@ -207,7 +207,7 @@ class E7ADBShopRefresh:
         print('Skystone spent:', self.refresh_count*3)
 
     def checkScreenDimension(self):
-        adb_process = subprocess.run([self.adb_path] + self.device_args + ['exec-out', 'screencap','-p','2> /dev/null'], stdout=subprocess.PIPE)
+        adb_process = subprocess.run([self.adb_path] + self.device_args + ['exec-out', 'screencap -p 2> /dev/null'], stdout=subprocess.PIPE)
         byte_image = BytesIO(adb_process.stdout)
         pil_image = Image.open(byte_image)
         pil_image = np.array(pil_image)
